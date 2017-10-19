@@ -1,0 +1,29 @@
+#!/bin/bash
+#
+# plutoIIIdownload :: download an rbf file to a Pluto-III fpga board
+#
+
+SERIAL=/dev/ttyUSB0
+
+if [ ! -f "$1" ]
+then
+	echo "Usage: $(basename $0) filename.rbf" >&2
+	exit 1
+fi
+
+if [ ! -c "$SERIAL" ]
+then
+	echo "$(basename $0): serial port $SERIAL does not exist."
+	exit 2
+fi
+
+if [ ! -w "$SERIAL" ]
+then
+	echo "$(basename $0): serial port $SERIAL is not writable."
+	exit 3
+fi
+
+echo -n "Unconfiguring Pluto3 board and downloading $1 ... "
+(stty 115200 raw cs8 -cstopb -parenb -ixon -crtscts 0<&1 ; sendbreak; cat "$1" ) > $SERIAL
+echo "done."
+
